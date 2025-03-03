@@ -26,7 +26,7 @@ namespace access_bits_calculator
         private List<string[]> checkedDataBlock3;
         private List<string[]> checkedSectorTrailer;
         public System.Windows.Forms.TextBox[] accessBitTextBoxes;
-        private bool[,] accessBits = new bool[8, 3];
+        private readonly bool[,] accessBits = new bool[8, 3];
 
         public AccessBitsCalculator()
         {
@@ -35,41 +35,41 @@ namespace access_bits_calculator
 
             accessBits = new bool[8, 3];
 
-            //0
+            // Block 0
             accessBits[3, 1] = true; // C10
             accessBits[7, 2] = true; // C20
             accessBits[3, 2] = true; // C30
 
-            accessBits[3, 0] = !(accessBits[7, 2]); // -C20
-            accessBits[7, 0] = !(accessBits[3, 1]); // -C10
-            accessBits[7, 1] = !(accessBits[3, 2]); // -C30
+            accessBits[3, 0] = !accessBits[7, 2]; // -C20
+            accessBits[7, 0] = !accessBits[3, 1]; // -C10
+            accessBits[7, 1] = !accessBits[3, 2]; // -C30
 
-            //1
-            accessBits[2, 1] = true; //C11
-            accessBits[2, 2] = true; //C31
-            accessBits[6, 2] = true; //C21
+            // Block 1
+            accessBits[2, 1] = true; // C11
+            accessBits[2, 2] = true; // C31
+            accessBits[6, 2] = true; // C21
 
-            accessBits[6, 0] = !(accessBits[2, 1]); // -C11
-            accessBits[6, 1] = !(accessBits[0, 2]); // -C31
-            accessBits[2, 0] = !(accessBits[6, 2]); // -C21
+            accessBits[6, 0] = !accessBits[2, 1]; // -C11
+            accessBits[6, 1] = !accessBits[2, 2]; // -C31
+            accessBits[2, 0] = !accessBits[6, 2]; // -C21
 
-            //2
+            // Block 2
             accessBits[1, 1] = true; // C12
             accessBits[1, 2] = true; // C32
-            accessBits[6, 2] = true; // C22
+            accessBits[5, 2] = true; // C22
 
-            accessBits[6, 0] = !(accessBits[1, 1]); // -C12
-            accessBits[6, 1] = !(accessBits[1, 2]); // -C32
-            accessBits[1, 0] = !(accessBits[6, 2]); // -C22
+            accessBits[5, 0] = !accessBits[1, 1]; // -C12
+            accessBits[5, 1] = !accessBits[1, 2]; // -C32
+            accessBits[1, 0] = !accessBits[5, 2]; // -C22
 
-            // sector trailer
+            // Sector Trailer
             accessBits[0, 1] = true; // C13
             accessBits[4, 2] = true; // C33
-            accessBits[0, 2] = true; // C20
+            accessBits[0, 2] = true; // C23
 
-            accessBits[0, 0] = !(accessBits[4, 2]); // -C23
-            accessBits[4, 0] = !(accessBits[0, 2]); // -C13
-            accessBits[4, 1] = !(accessBits[0, 2]); // -C33
+            accessBits[0, 0] = !accessBits[4, 2]; // -C33
+            accessBits[4, 0] = !accessBits[0, 1]; // -C13
+            accessBits[4, 1] = !accessBits[0, 2]; // -C23
 
             InitializeComponent();
             InitializeTabControl();
@@ -77,55 +77,110 @@ namespace access_bits_calculator
             checkedDataBlock1 = GetCheckedRows(dgvDataBlock1);
             checkedDataBlock3 = GetCheckedRows(dgvDataBlock2);
             checkedSectorTrailer = GetCheckedRows(dgvSectorTrailer);
-            accessBitTextBoxes = new System.Windows.Forms.TextBox[] { tbAB0, tbAB1, tbAB2, tbAB3 };
+            accessBitTextBoxes = [tbAB0, tbAB1, tbAB2, tbAB3];
         }
-
-        private void AccessBitsCalculator_Load(object sender, EventArgs e) { }
 
         private void InitializeTabControl()
         {
             accessConditionsBlock0 =
             [
-                new DataBlockCondition("KEY A | B", "KEY A | B", "KEY A | B", "KEY A | B"),
-                new DataBlockCondition("KEY A | B", "Never", "Never", "Never"),
-                new DataBlockCondition("KEY A | B", "KEY B", "Never", "Never"),
-                new DataBlockCondition("KEY A | B", "KEY B", "KEY B", "KEY A | B"),
-                new DataBlockCondition("KEY A | B", "Never", "Never", "KEY A | B"),
-                new DataBlockCondition("KEY B", "KEY B", "Never", "Never"),
-                new DataBlockCondition("KEY B", "Never", "Never", "Never"),
-                new DataBlockCondition("Never", "Never", "Never", "Never"),
+                new DataBlockCondition(
+                    "0",
+                    "0",
+                    "0",
+                    "KEY A | B",
+                    "KEY A | B",
+                    "KEY A | B",
+                    "KEY A | B"
+                ),
+                new DataBlockCondition("0", "1", "0", "KEY A | B", "Never", "Never", "Never"),
+                new DataBlockCondition("1", "0", "0", "KEY A | B", "KEY B", "Never", "Never"),
+                new DataBlockCondition("1", "1", "0", "KEY A | B", "KEY B", "KEY B", "KEY A | B"),
+                new DataBlockCondition("0", "0", "1", "KEY A | B", "Never", "Never", "KEY A | B"),
+                new DataBlockCondition("0", "1", "1", "KEY B", "KEY B", "Never", "Never"),
+                new DataBlockCondition("1", "0", "1", "KEY B", "Never", "Never", "Never"),
+                new DataBlockCondition("1", "1", "1", "Never", "Never", "Never", "Never"),
             ];
 
             accessConditionsBlock1 =
             [
-                new DataBlockCondition("KEY A | B", "KEY A | B", "KEY A | B", "KEY A | B"),
-                new DataBlockCondition("KEY A | B", "Never", "Never", "Never"),
-                new DataBlockCondition("KEY A | B", "KEY B", "Never", "Never"),
-                new DataBlockCondition("KEY A | B", "KEY B", "KEY B", "KEY A | B"),
-                new DataBlockCondition("KEY A | B", "Never", "Never", "KEY A | B"),
-                new DataBlockCondition("KEY B", "KEY B", "Never", "Never"),
-                new DataBlockCondition("KEY B", "Never", "Never", "Never"),
-                new DataBlockCondition("Never", "Never", "Never", "Never"),
+                new DataBlockCondition(
+                    "0",
+                    "0",
+                    "0",
+                    "KEY A | B",
+                    "KEY A | B",
+                    "KEY A | B",
+                    "KEY A | B"
+                ),
+                new DataBlockCondition("0", "1", "0", "KEY A | B", "Never", "Never", "Never"),
+                new DataBlockCondition("1", "0", "0", "KEY A | B", "KEY B", "Never", "Never"),
+                new DataBlockCondition("1", "1", "0", "KEY A | B", "KEY B", "KEY B", "KEY A | B"),
+                new DataBlockCondition("0", "0", "1", "KEY A | B", "Never", "Never", "KEY A | B"),
+                new DataBlockCondition("0", "1", "1", "KEY B", "KEY B", "Never", "Never"),
+                new DataBlockCondition("1", "0", "1", "KEY B", "Never", "Never", "Never"),
+                new DataBlockCondition("1", "1", "1", "Never", "Never", "Never", "Never"),
             ];
 
             accessConditionsBlock2 =
             [
-                new DataBlockCondition("KEY A | B", "KEY A | B", "KEY A | B", "KEY A | B"),
-                new DataBlockCondition("KEY A | B", "Never", "Never", "Never"),
-                new DataBlockCondition("KEY A | B", "KEY B", "Never", "Never"),
-                new DataBlockCondition("KEY A | B", "KEY B", "KEY B", "KEY A | B"),
-                new DataBlockCondition("KEY A | B", "Never", "Never", "KEY A | B"),
-                new DataBlockCondition("KEY B", "KEY B", "Never", "Never"),
-                new DataBlockCondition("KEY B", "Never", "Never", "Never"),
-                new DataBlockCondition("Never", "Never", "Never", "Never"),
+                new DataBlockCondition(
+                    "0",
+                    "0",
+                    "0",
+                    "KEY A | B",
+                    "KEY A | B",
+                    "KEY A | B",
+                    "KEY A | B"
+                ),
+                new DataBlockCondition("0", "1", "0", "KEY A | B", "Never", "Never", "Never"),
+                new DataBlockCondition("1", "0", "0", "KEY A | B", "KEY B", "Never", "Never"),
+                new DataBlockCondition("1", "1", "0", "KEY A | B", "KEY B", "KEY B", "KEY A | B"),
+                new DataBlockCondition("0", "0", "1", "KEY A | B", "Never", "Never", "KEY A | B"),
+                new DataBlockCondition("0", "1", "1", "KEY B", "KEY B", "Never", "Never"),
+                new DataBlockCondition("1", "0", "1", "KEY B", "Never", "Never", "Never"),
+                new DataBlockCondition("1", "1", "1", "Never", "Never", "Never", "Never"),
             ];
 
             accessConditionsST =
             [
-                new SectorTrailerCondition("Never", "KEY A", "KEY A", "Never", "KEY A", "KEY A"),
-                new("Never", "Never", "KEY A", "Never", "KEY A", "Never"),
-                new("Never", "KEY B", "KEY A | B", "Never", "Never", "KEY B"),
                 new SectorTrailerCondition(
+                    "0",
+                    "0",
+                    "0",
+                    "Never",
+                    "KEY A",
+                    "KEY A",
+                    "Never",
+                    "KEY A",
+                    "KEY A"
+                ),
+                new SectorTrailerCondition(
+                    "0",
+                    "1",
+                    "0",
+                    "Never",
+                    "Never",
+                    "KEY A",
+                    "Never",
+                    "KEY A",
+                    "Never"
+                ),
+                new SectorTrailerCondition(
+                    "1",
+                    "0",
+                    "0",
+                    "Never",
+                    "KEY B",
+                    "KEY A | B",
+                    "Never",
+                    "Never",
+                    "KEY B"
+                ),
+                new SectorTrailerCondition(
+                    "1",
+                    "1",
+                    "0",
                     "Never",
                     "Never",
                     "KEY A | B",
@@ -133,8 +188,21 @@ namespace access_bits_calculator
                     "Never",
                     "Never"
                 ),
-                new SectorTrailerCondition("Never", "KEY A", "KEY A", "KEY A", "KEY A", "KEY A"),
                 new SectorTrailerCondition(
+                    "0",
+                    "0",
+                    "1",
+                    "Never",
+                    "KEY A",
+                    "KEY A",
+                    "KEY A",
+                    "KEY A",
+                    "KEY A"
+                ),
+                new SectorTrailerCondition(
+                    "0",
+                    "1",
+                    "1",
                     "Never",
                     "KEY B",
                     "KEY A | B",
@@ -143,6 +211,9 @@ namespace access_bits_calculator
                     "KEY B"
                 ),
                 new SectorTrailerCondition(
+                    "1",
+                    "0",
+                    "1",
                     "Never",
                     "Never",
                     "KEY A | B",
@@ -151,6 +222,9 @@ namespace access_bits_calculator
                     "Never"
                 ),
                 new SectorTrailerCondition(
+                    "1",
+                    "1",
+                    "1",
                     "Never",
                     "Never",
                     "KEY A | B",
@@ -174,7 +248,6 @@ namespace access_bits_calculator
         private void bCalcAccBits_Click(object sender, EventArgs e)
         {
             UpdateArray();
-
             UpdateAccessBitTextBoxes(accessBits, accessBitTextBoxes);
         }
 
@@ -260,7 +333,7 @@ namespace access_bits_calculator
             tab.Controls.Add(dgvSectorTrailer);
         }
 
-        private static (bool, bool, bool) ConvertToAccessBitsDataBlock(string[] rowData)
+        private static (bool, bool, bool) ConvertToAccessBits(string[] rowData)
         {
             if (rowData == null || rowData.Length < 4)
             {
@@ -270,162 +343,83 @@ namespace access_bits_calculator
             string c1 = rowData[0].Trim().ToUpper();
             string c2 = rowData[1].Trim().ToUpper();
             string c3 = rowData[2].Trim().ToUpper();
-            string c4 = rowData[3].Trim().ToUpper();
 
-            if (c1 == "NEVER" && c2 == "NEVER" && c3 == "NEVER" && c4 == "NEVER")
+            if (c1 == "1" && c2 == "1" && c3 == "1")
                 return (true, true, true); // 111
-            if (c1 == "KEY B" && c2 == "NEVER" && c3 == "NEVER" && c4 == "NEVER")
+            if (c1 == "1" && c2 == "0" && c3 == "1")
                 return (true, false, true); // 101
-            if (c1 == "KEY B" && c2 == "KEY B" && c3 == "NEVER" && c4 == "NEVER")
+            if (c1 == "0" && c2 == "1" && c3 == "1")
                 return (false, true, true); // 011
-            if (c1 == "KEY A | B" && c2 == "NEVER" && c3 == "NEVER" && c4 == "KEY A | B")
+            if (c1 == "0" && c2 == "0" && c3 == "1")
                 return (false, false, true); // 001
-            if (c1 == "KEY A | B" && c2 == "KEY B" && c3 == "KEY B" && c4 == "KEY A | B")
+            if (c1 == "1" && c2 == "1" && c3 == "0")
                 return (true, true, false); // 110
-            if (c1 == "KEY A | B" && c2 == "KEY B" && c3 == "NEVER" && c4 == "NEVER")
+            if (c1 == "1" && c2 == "0" && c3 == "0")
                 return (true, false, false); // 100
-            if (c1 == "KEY A | B" && c2 == "NEVER" && c3 == "NEVER" && c4 == "NEVER")
+            if (c1 == "0" && c2 == "1" && c3 == "0")
                 return (false, true, false); // 010
-            if (c1 == "KEY A | B" && c2 == "KEY A | B" && c3 == "KEY A | B" && c4 == "KEY A | B")
+            if (c1 == "0" && c2 == "0" && c3 == "0")
                 return (false, false, false); // 000
             return (false, false, false); // Default return
         }
 
-        private static (bool, bool, bool) ConvertToAccessBitsSectorTrailer(string[] rowData)
-        {
-            if (rowData == null || rowData.Length < 6)
-            {
-                return (false, false, true); // 001
-            }
-
-            string readA = rowData[0].Trim().ToUpper();
-            string writeA = rowData[1].Trim().ToUpper();
-            string readAccessBits = rowData[2].Trim().ToUpper();
-            string writeAccessBits = rowData[3].Trim().ToUpper();
-            string readB = rowData[4].Trim().ToUpper();
-            string writeB = rowData[5].Trim().ToUpper();
-
-            if (
-                readA == "NEVER"
-                && writeA == "KEY A"
-                && readAccessBits == "KEY A"
-                && writeAccessBits == "NEVER"
-                && readB == "KEY A"
-                && writeB == "KEY A"
-            )
-                return (false, false, false); // 000
-
-            if (
-                readA == "NEVER"
-                && writeA == "NEVER"
-                && readAccessBits == "KEY A"
-                && writeAccessBits == "NEVER"
-                && readB == "KEY A"
-                && writeB == "NEVER"
-            )
-                return (false, true, false); // 010
-
-            if (
-                readA == "NEVER"
-                && writeA == "KEY B"
-                && readAccessBits == "KEY A | B"
-                && writeAccessBits == "NEVER"
-                && readB == "NEVER"
-                && writeB == "KEY B"
-            )
-                return (true, false, false); // 100
-
-            if (
-                readA == "NEVER"
-                && writeA == "NEVER"
-                && readAccessBits == "KEY A | B"
-                && writeAccessBits == "NEVER"
-                && readB == "NEVER"
-                && writeB == "NEVER"
-            )
-                return (true, true, false); // 110
-
-            if (
-                readA == "NEVER"
-                && writeA == "KEY A"
-                && readAccessBits == "KEY A"
-                && writeAccessBits == "KEY A"
-                && readB == "KEY A"
-                && writeB == "KEY A"
-            )
-                return (false, false, true); // 001
-
-            if (
-                readA == "NEVER"
-                && writeA == "KEY B"
-                && readAccessBits == "KEY A | B"
-                && writeAccessBits == "KEY B"
-                && readB == "NEVER"
-                && writeB == "KEY B"
-            )
-                return (false, true, true); // 011
-
-            if (
-                readA == "NEVER"
-                && writeA == "NEVER"
-                && readAccessBits == "KEY A | B"
-                && writeAccessBits == "KEY B"
-                && readB == "NEVER"
-                && writeB == "NEVER"
-            )
-                return (true, false, true); // 101
-
-            if (
-                readA == "NEVER"
-                && writeA == "NEVER"
-                && readAccessBits == "KEY A | B"
-                && writeAccessBits == "NEVER"
-                && readB == "NEVER"
-                && writeB == "NEVER"
-            )
-                return (true, true, true); // 111
-
-            return (false, false, true); // Default 001
-        }
-
         private void UpdateArray()
         {
-            List<string[]> checkedDataBlock0 =
-                GetCheckedRows(dgvDataBlock0) ?? new List<string[]>();
-            List<string[]> checkedDataBlock1 =
-                GetCheckedRows(dgvDataBlock1) ?? new List<string[]>();
-            List<string[]> checkedDataBlock2 =
-                GetCheckedRows(dgvDataBlock2) ?? new List<string[]>();
-            List<string[]> checkedSectorTrailer =
-                GetCheckedRows(dgvSectorTrailer) ?? new List<string[]>();
+            List<string[]> checkedDataBlock0 = GetCheckedRows(dgvDataBlock0) ?? [];
+            List<string[]> checkedDataBlock1 = GetCheckedRows(dgvDataBlock1) ?? [];
+            List<string[]> checkedDataBlock2 = GetCheckedRows(dgvDataBlock2) ?? [];
+            List<string[]> checkedSectorTrailer = GetCheckedRows(dgvSectorTrailer) ?? [];
 
-            (bool, bool, bool)[] access = new (bool, bool, bool)[4];
+            (bool, bool, bool)[] accessBlock0 = new (bool, bool, bool)[4];
+            (bool, bool, bool)[] accessBlock1 = new (bool, bool, bool)[4];
+            (bool, bool, bool)[] accessBlock2 = new (bool, bool, bool)[4];
+            (bool, bool, bool)[] accessSectorTrailer = new (bool, bool, bool)[4];
 
-            List<string[]>[] checkedData =
+            Func<string[], (bool, bool, bool)> converter = ConvertToAccessBits;
+
+            void UpdateAccessBits((bool, bool, bool)[] access, int startIndex)
             {
-                checkedDataBlock0,
-                checkedDataBlock1,
-                checkedDataBlock2,
-                checkedSectorTrailer,
-            };
-            Func<string[], (bool, bool, bool)>[] converters =
-            {
-                ConvertToAccessBitsDataBlock,
-                ConvertToAccessBitsDataBlock,
-                ConvertToAccessBitsDataBlock,
-                ConvertToAccessBitsSectorTrailer,
-            };
+                accessBits[startIndex, 1] = access[0].Item1;
+                accessBits[startIndex + 4, 2] = access[0].Item2;
+                accessBits[startIndex, 2] = access[0].Item3;
+
+                accessBits[startIndex, 0] = !accessBits[startIndex + 4, 2];
+                accessBits[startIndex + 4, 0] = !accessBits[startIndex, 1];
+                accessBits[startIndex + 4, 1] = !accessBits[startIndex, 2];
+            }
 
             for (int i = 0; i < 4; i++)
             {
-                access[i] =
-                    checkedData[i].Count > 0
-                        ? converters[i](checkedData[i][0])
-                        : (false, false, false);
+                string[] rowBlock0 =
+                    (checkedDataBlock0.Count > i) ? checkedDataBlock0[i] : new string[3];
+                string[] rowBlock1 =
+                    (checkedDataBlock1.Count > i) ? checkedDataBlock1[i] : new string[3];
+                string[] rowBlock2 =
+                    (checkedDataBlock2.Count > i) ? checkedDataBlock2[i] : new string[3];
+                string[] rowSectorTrailer =
+                    (checkedSectorTrailer.Count > i) ? checkedSectorTrailer[i] : new string[3];
+
+                accessBlock0[i] = converter(rowBlock0);
+                accessBlock1[i] = converter(rowBlock1);
+                accessBlock2[i] = converter(rowBlock2);
+                accessSectorTrailer[i] = converter(rowSectorTrailer);
+            }
+
+            UpdateAccessBits(accessBlock0, 3);
+            UpdateAccessBits(accessBlock1, 2);
+            UpdateAccessBits(accessBlock2, 1);
+            UpdateAccessBits(accessSectorTrailer, 0);
+
+            for (int i = 0; i < 4; i++)
+            {
+                Debug.WriteLine($"Block 0 Access {i}: {accessBlock0[i]}");
+                Debug.WriteLine($"Block 1 Access {i}: {accessBlock1[i]}");
+                Debug.WriteLine($"Block 2 Access {i}: {accessBlock2[i]}");
+                Debug.WriteLine($"Sector Trailer Access {i}: {accessSectorTrailer[i]}");
             }
         }
 
-        private void UpdateAccessBitTextBoxes(
+        private static void UpdateAccessBitTextBoxes(
             bool[,] accessBits,
             System.Windows.Forms.TextBox[] accessBitTextBoxes
         )
@@ -433,7 +427,7 @@ namespace access_bits_calculator
             if (accessBitTextBoxes.Length < 4)
                 return;
 
-            for (int col = 0; col < 4; col++) // Loop untuk 4 kolom (3 Data Blocks + 1 Sector Trailer)
+            for (int col = 0; col < 3; col++)
             {
                 int value = 0;
                 for (int row = 0; row < 8; row++)
@@ -444,14 +438,9 @@ namespace access_bits_calculator
                     }
                 }
 
-                // Konversi ke format heksadesimal dan simpan di TextBox
                 accessBitTextBoxes[col].Text = value.ToString("X2");
+                accessBitTextBoxes[3].Text = "69";
             }
-
-            // Debugging
-            Debug.WriteLine(
-                $"Access Bits: {accessBitTextBoxes[0].Text} | {accessBitTextBoxes[1].Text} | {accessBitTextBoxes[2].Text} | {accessBitTextBoxes[3].Text}"
-            );
         }
 
         private static List<string[]> GetCheckedRows(DataGridView dgv)
@@ -490,6 +479,9 @@ namespace access_bits_calculator
         }
 
         public class DataBlockCondition(
+            string c1,
+            string c2,
+            string c3,
             string read,
             string write,
             string increment,
@@ -497,6 +489,9 @@ namespace access_bits_calculator
         )
         {
             public bool IsSelected { get; set; } = false;
+            public string C1 { get; set; } = c1;
+            public string C2 { get; set; } = c2;
+            public string C3 { get; set; } = c3;
             public string Read { get; set; } = read;
             public string Write { get; set; } = write;
             public string Increment { get; set; } = increment;
@@ -504,6 +499,9 @@ namespace access_bits_calculator
         }
 
         public class SectorTrailerCondition(
+            string c1,
+            string c2,
+            string c3,
             string keyARead,
             string keyAWrite,
             string accessBitRead,
@@ -513,6 +511,9 @@ namespace access_bits_calculator
         )
         {
             public bool IsSelected { get; set; } = false;
+            public string C1 { get; set; } = c1;
+            public string C2 { get; set; } = c2;
+            public string C3 { get; set; } = c3;
             public string KeyARead { get; set; } = keyARead;
             public string KeyAWrite { get; set; } = keyAWrite;
             public string AccessBitRead { get; set; } = accessBitRead;
