@@ -21,10 +21,10 @@ namespace access_bits_calculator
         private DataGridView dgvDataBlock2;
         private DataGridView dgvDataBlock1;
         private DataGridView dgvDataBlock0;
-        private List<string[]> checkedDataBlock0;
-        private List<string[]> checkedDataBlock1;
-        private List<string[]> checkedDataBlock3;
-        private List<string[]> checkedSectorTrailer;
+        private readonly List<string[]> checkedDataBlock0;
+        private readonly List<string[]> checkedDataBlock1;
+        private readonly List<string[]> checkedDataBlock3;
+        private readonly List<string[]> checkedSectorTrailer;
         public System.Windows.Forms.TextBox[] accessBitTextBoxes;
         private readonly bool[,] accessBits = new bool[8, 3];
 
